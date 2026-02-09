@@ -36,3 +36,43 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	Steering.LinearVelocity *= arriveVelocity;
 	return Steering;
 }
+
+SteeringOutput Pursuit::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
+{
+	SteeringOutput Steering{};
+
+	FVector2D ToTarget = Target.Position - Agent.GetPosition();
+	float Distance = ToTarget.Length();
+	float TargetSpeed = Target.LinearVelocity.Length();
+	float Time = (TargetSpeed > 0.0f) ? Distance / TargetSpeed : 0.0f;
+    
+ 	FVector2D PredictedPos = Target.Position + (Target.LinearVelocity * Time);
+    
+ 	Steering.LinearVelocity = PredictedPos - Agent.GetPosition();
+	Steering.LinearVelocity.Normalize();
+    
+	return Steering;
+}
+
+SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
+{
+	SteeringOutput Steering{};
+
+	FVector2D ToTarget = Target.Position - Agent.GetPosition();
+	float Distance = ToTarget.Length();
+	float TargetSpeed = Target.LinearVelocity.Length();
+	float Time = (TargetSpeed > 0.0f) ? Distance / TargetSpeed : 0.0f;
+    
+	FVector2D PredictedPos = Target.Position + (Target.LinearVelocity * Time);
+    if (Distance<600)
+    {
+	    Steering.LinearVelocity = -PredictedPos + Agent.GetPosition();
+    	Steering.LinearVelocity.Normalize();
+    }
+    
+	return Steering;
+}
+
+
+
+
