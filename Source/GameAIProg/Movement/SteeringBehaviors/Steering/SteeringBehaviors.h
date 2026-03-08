@@ -48,6 +48,9 @@ public:
 	Arrive() = default;
 	virtual ~Arrive() = default  ;
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+	void SetTargetRadius(float radius) { maxRad = radius; };
+	float maxRad = 250;
+	float minRad = 200;
 };
 class Pursuit : public ISteeringBehavior
 {
@@ -57,12 +60,29 @@ public:
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
 };
 
+
 class Evade : public ISteeringBehavior
 {
 public:
 	Evade() = default;
-	virtual ~Evade() = default ;
-	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+	virtual ~Evade() = default;
+
+	void SetTarget(const FTargetData& NewTarget)
+	{
+		Target = NewTarget;
+		bHasTarget = true;
+	}
+
+	void ClearTarget()
+	{
+		bHasTarget = false;
+	}
+
+	SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+
+private:
+	FTargetData Target{};
+	bool bHasTarget = false;
 };
 
 class Wander : public Seek

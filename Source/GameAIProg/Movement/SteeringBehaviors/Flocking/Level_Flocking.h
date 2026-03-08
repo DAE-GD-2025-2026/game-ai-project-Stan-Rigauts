@@ -18,7 +18,6 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	bool bUseMouseTarget{true};
@@ -28,5 +27,5 @@ protected:
 	TUniquePtr<Flock> pFlock{};
 	
 	UPROPERTY(EditAnywhere, Category = "Flocking")
-	ASteeringAgent* pAgentToEvade{nullptr}; // non owning ref
+	ASteeringAgent* pAgentToEvade{nullptr}; 
 };

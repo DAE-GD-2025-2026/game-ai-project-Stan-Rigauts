@@ -12,7 +12,7 @@ BlendedSteering::BlendedSteering(const std::vector<WeightedBehavior>& WeightedBe
 //BLENDED STEERING
 SteeringOutput BlendedSteering::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
-	SteeringOutput BlendedSteering = {};
+	SteeringOutput blendedSteering = {};
 	float TotalWeight = 0.f;
 
 	for (const WeightedBehavior& weightedBehavior : WeightedBehaviors)
@@ -21,8 +21,8 @@ SteeringOutput BlendedSteering::CalculateSteering(float DeltaT, ASteeringAgent& 
 		{
 			SteeringOutput behaviorOutput = weightedBehavior.pBehavior->CalculateSteering(DeltaT, Agent);
 
-			BlendedSteering.LinearVelocity += behaviorOutput.LinearVelocity * weightedBehavior.Weight;
-			BlendedSteering.AngularVelocity += behaviorOutput.AngularVelocity * weightedBehavior.Weight;
+			blendedSteering.LinearVelocity += behaviorOutput.LinearVelocity * weightedBehavior.Weight;
+			blendedSteering.AngularVelocity += behaviorOutput.AngularVelocity * weightedBehavior.Weight;
 
 			TotalWeight += weightedBehavior.Weight;
 
@@ -42,25 +42,25 @@ SteeringOutput BlendedSteering::CalculateSteering(float DeltaT, ASteeringAgent& 
 
 	if (TotalWeight > 0.f)
 	{
-		BlendedSteering.LinearVelocity /= TotalWeight;
-		BlendedSteering.AngularVelocity /= TotalWeight;
+		blendedSteering.LinearVelocity /= TotalWeight;
+		blendedSteering.AngularVelocity /= TotalWeight;
 	}
 
-	BlendedSteering.IsValid = !BlendedSteering.LinearVelocity.IsNearlyZero();
+	blendedSteering.IsValid = !blendedSteering.LinearVelocity.IsNearlyZero();
 
-	if (Agent.GetDebugRenderingEnabled() && BlendedSteering.IsValid)
+	if (Agent.GetDebugRenderingEnabled() && blendedSteering.IsValid)
 	{
 		FVector AgentPos3D = Agent.GetActorLocation();
 		FVector2D AgentPos2D(AgentPos3D.X, AgentPos3D.Y);
 
-		FVector2D FinalVector = BlendedSteering.LinearVelocity * 200.f;  
+		FVector2D FinalVector = blendedSteering.LinearVelocity * 200.f;  
 		FVector EndPos3D(AgentPos2D.X + FinalVector.X, AgentPos2D.Y + FinalVector.Y, AgentPos3D.Z);
 
 		DrawDebugLine(Agent.GetWorld(), AgentPos3D, EndPos3D, FColor::Yellow, false, -1.f, 0, 3.f);
 		DrawDebugPoint(Agent.GetWorld(), EndPos3D, 10.f, FColor::Yellow, false, -1.f, 0);
 	}
 
-	return BlendedSteering;
+	return blendedSteering;
 }
 
 float* BlendedSteering::GetWeight(ISteeringBehavior* const SteeringBehavior)

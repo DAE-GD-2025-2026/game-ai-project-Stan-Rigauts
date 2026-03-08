@@ -22,7 +22,6 @@ struct Cell final
 
 	std::vector<FVector2D> GetRectPoints() const;
 	
-	// all the agents currently in this cell
 	std::list<ASteeringAgent*> Agents;
 	FRect BoundingBox;
 };
@@ -41,15 +40,13 @@ public:
 	const TArray<ASteeringAgent*>& GetNeighbors() const { return Neighbors; }
 	int GetNrOfNeighbors() const { return NrOfNeighbors; }
 
-	//empties the cells of entities
 	void EmptyCells();
 	void RenderCells()const;
 
 private:
-	// For debug draw purposes
+	
 	UWorld* pWorld{};
 	
-	// Cells and properties
 	std::vector<Cell> Cells;
 	FVector2D CellOrigin{};
 	
@@ -62,11 +59,9 @@ private:
 	float CellWidth;
 	float CellHeight;
 
-	// Members to avoid memory allocation on every frame
 	TArray<ASteeringAgent*> Neighbors;
 	int NrOfNeighbors;
 
-	// Helper functions
 	int PositionToIndex(FVector2D const & Pos) const;
 	bool DoRectsOverlap(FRect const& RectA, FRect const& RectB);
 };

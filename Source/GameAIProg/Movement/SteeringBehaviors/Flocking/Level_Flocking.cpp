@@ -7,7 +7,6 @@
 // Sets default values
 ALevel_Flocking::ALevel_Flocking()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 }
 
@@ -16,18 +15,30 @@ void ALevel_Flocking::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TrimWorld->SetTrimWorldSize(3000.f);
+	TrimWorld->SetTrimWorldSize(1000.f);
 	TrimWorld->bShouldTrimWorld = true;
+
+	pAgentToEvade = GetWorld()->SpawnActor<ASteeringAgent>(SteeringAgentClass,FVector(0, 0, 0),FRotator::ZeroRotator);
+
+	
+	if (pAgentToEvade)
+	{
+		auto* wander = new Wander();
+		pAgentToEvade->SetSteeringBehavior(wander);
+
+		
+	}
+
 
 	pFlock = TUniquePtr<Flock>(
 		new Flock(
 			GetWorld(),
 			SteeringAgentClass,
 			FlockSize,
-			TrimWorld->GetTrimWorldSize(),
+			TrimWorld->GetTrimWorldSize() * 2.f,  
 			pAgentToEvade,
 			true)
-			);
+	);
 }
 
 // Called every frame
@@ -40,5 +51,7 @@ void ALevel_Flocking::Tick(float DeltaTime)
 	pFlock->RenderDebug();
 	if (bUseMouseTarget)
 		pFlock->SetTarget_Seek(MouseTarget);
+
+
 }
 

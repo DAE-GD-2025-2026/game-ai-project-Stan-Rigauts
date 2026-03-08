@@ -8,7 +8,7 @@ SteeringOutput Seek::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	SteeringOutput Steering{};
 	Steering.LinearVelocity = Target.Position - Agent.GetPosition();
 	Steering.LinearVelocity.Normalize();
-	Steering.IsValid = true; // Always valid
+	Steering.IsValid = true;
 	return Steering;
 }
 
@@ -17,15 +17,14 @@ SteeringOutput Flee::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	SteeringOutput Steering{};
 	Steering.LinearVelocity = Agent.GetPosition() - Target.Position;
 	Steering.LinearVelocity.Normalize();
-	Steering.IsValid = true; // Always valid
+	Steering.IsValid = true; 
 	return Steering;
 }
 
 SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
 	SteeringOutput Steering{};
-	float maxRad = 100;
-	float minRad = 50;
+	
 	float arriveVelocity{ 1 };
 	Steering.LinearVelocity = Target.Position - Agent.GetPosition();
 	float dist = Steering.LinearVelocity.Length();
@@ -35,7 +34,7 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 
 	Steering.LinearVelocity.Normalize();
 	Steering.LinearVelocity *= arriveVelocity;
-	Steering.IsValid = true; // Always valid
+	Steering.IsValid = true; 
 	return Steering;
 }
 
@@ -52,38 +51,46 @@ SteeringOutput Pursuit::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 
 	Steering.LinearVelocity = PredictedPos - Agent.GetPosition();
 	Steering.LinearVelocity.Normalize();
-	Steering.IsValid = true; // Always valid
+	Steering.IsValid = true; 
 
 	return Steering;
 }
+
 
 SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
 	SteeringOutput Steering{};
 
+	if (!bHasTarget)
+	{
+		Steering.IsValid = false;
+		return Steering;
+	}
+
 	FVector2D ToTarget = Target.Position - Agent.GetPosition();
 	float Distance = ToTarget.Length();
 
-	// Only evade if target is within range - this makes it useful for Priority steering!
-	if (Distance < 600)
+	const float PanicDistance = 600.f;
+	if (Distance < PanicDistance)
 	{
 		float TargetSpeed = Target.LinearVelocity.Length();
 		float Time = (TargetSpeed > 0.0f) ? Distance / TargetSpeed : 0.0f;
 
 		FVector2D PredictedPos = Target.Position + (Target.LinearVelocity * Time);
 
-		Steering.LinearVelocity = -PredictedPos + Agent.GetPosition();
+		Steering.LinearVelocity = Agent.GetPosition() - PredictedPos;
 		Steering.LinearVelocity.Normalize();
-		Steering.IsValid = true; // Valid when close enough
+		Steering.LinearVelocity *= Agent.GetMaxLinearSpeed();
+
+		Steering.IsValid = true;
 	}
 	else
 	{
-		Steering.IsValid = false; // Not valid when far away
+		Steering.IsValid = false;
 	}
 
 	return Steering;
 }
-
 #include "DrawDebugHelpers.h"
 
 SteeringOutput Wander::CalculateSteering(float DeltaTime, ASteeringAgent& Agent)
@@ -112,21 +119,9 @@ SteeringOutput Wander::CalculateSteering(float DeltaTime, ASteeringAgent& Agent)
 	Displacement *= m_WanderRadius;
 	FVector2D WanderTarget = CircleCenter + Displacement;
 
-	FVector CircleCenter3D(CircleCenter.X, CircleCenter.Y, AgentPos3D.Z);
-	FVector WanderTarget3D(WanderTarget.X, WanderTarget.Y, AgentPos3D.Z);
-	FVector AgentPos3D_Draw(AgentPos2D.X, AgentPos2D.Y, AgentPos3D.Z);
-
-	DrawDebugCircle(Agent.GetWorld(), CircleCenter3D, m_WanderRadius, 32, FColor::Green, false, -1.f, 0, 2.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
-
-	DrawDebugLine(Agent.GetWorld(), AgentPos3D_Draw, WanderTarget3D, FColor::Red, false, -1.f, 0, 2.f
-	);
-
-	DrawDebugPoint(Agent.GetWorld(), WanderTarget3D, 10.f, FColor::Yellow, false, -1.f, 0);
-
-
 	Target.Position = WanderTarget;
 	Steering = Seek::CalculateSteering(DeltaTime, Agent);
-	Steering.IsValid = true; // Always valid
+	Steering.IsValid = true; 
 
 	return Steering;
 }
