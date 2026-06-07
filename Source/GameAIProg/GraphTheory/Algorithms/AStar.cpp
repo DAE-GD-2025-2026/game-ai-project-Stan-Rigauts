@@ -28,7 +28,7 @@ std::vector<Node*> AStar::FindPath(Node* const pStartNode, Node* const pGoalNode
 
     while (!openList.empty())
     {
-        // Pick lowest f-cost
+        //get lowest cost
         currentRecord = *std::min_element(
             openList.begin(), openList.end(),
             [](auto const& a, auto const& b)
@@ -36,17 +36,16 @@ std::vector<Node*> AStar::FindPath(Node* const pStartNode, Node* const pGoalNode
                 return a.estimatedTotalCost < b.estimatedTotalCost;
             });
 
-        // Goal reached
+        //if goal = reconstruct
         if (currentRecord.pNode == pGoalNode)
             return ReconstructPath(currentRecord, closedList, pStartNode);
 
-        // Explore neighbors
+		//loop through connections
         for (Connection* pConnection : pGraph->FindConnectionsFrom(currentRecord.pNode->GetId()))
         {
             Node* pNextNode = pGraph->GetNode(pConnection->GetToId()).get();
             float newCostSoFar = currentRecord.costSoFar + pConnection->GetWeight();
 
-            // CLOSED check
             auto closedIt = std::find_if(
                 closedList.begin(), closedList.end(),
                 [pNextNode](auto const& nr) { return nr.pNode == pNextNode; });
@@ -59,11 +58,8 @@ std::vector<Node*> AStar::FindPath(Node* const pStartNode, Node* const pGoalNode
                 closedList.erase(closedIt);
             }
 
-            // OPEN check
-            auto openIt = std::find_if(
-                openList.begin(), openList.end(),
-                [pNextNode](auto const& nr) { return nr.pNode == pNextNode; });
-
+            auto openIt = std::find_if(openList.begin(), openList.end(),[pNextNode](auto const& nr) { return nr.pNode == pNextNode; });
+           
             if (openIt != openList.end())
             {
                 if (openIt->costSoFar <= newCostSoFar)
@@ -72,7 +68,6 @@ std::vector<Node*> AStar::FindPath(Node* const pStartNode, Node* const pGoalNode
                 openList.erase(openIt);
             }
 
-            // Add new record
             NodeRecord newRecord{};
             newRecord.pNode = pNextNode;
             newRecord.pConnection = pConnection;
@@ -82,15 +77,12 @@ std::vector<Node*> AStar::FindPath(Node* const pStartNode, Node* const pGoalNode
             openList.push_back(newRecord);
         }
 
-        // Remove currentRecord from OPEN
-        auto it = std::find_if(
-            openList.begin(), openList.end(),
-            [&](auto const& nr) { return nr.pNode == currentRecord.pNode; });
+        auto it = std::find_if(openList.begin(), openList.end(),[&](auto const& nr) { return nr.pNode == currentRecord.pNode; });
 
         if (it != openList.end())
             openList.erase(it);
 
-        // Add to CLOSED
+        
         closedList.push_back(currentRecord);
     }
 
@@ -114,7 +106,7 @@ std::vector<Node*> AStar::FindPath(Node* const pStartNode, Node* const pGoalNode
         return ReconstructPath(*best, closedList, pStartNode);
     }
 
-    // No reachable nodes at all
+	//unreachable
     return { pStartNode };
 }
 
