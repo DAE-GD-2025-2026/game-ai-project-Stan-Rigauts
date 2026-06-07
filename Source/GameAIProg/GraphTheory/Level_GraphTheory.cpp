@@ -44,9 +44,28 @@ void ALevel_GraphTheory::BeginPlay()
 	
 	//TODO Make the graph and a couple connected nodes here..
 	GraphNodeFactory<Node> nodeFactory{};
-	int index1 = Graph.AddNode(nodeFactory.CreateNode(FVector2D{ 0.0f, 0.0f }));
-	int index2 = Graph.AddNode(nodeFactory.CreateNode(FVector2D{ 0.0f, 300.0f }));
-	Graph.AddConnection(index1, index2);
+
+	// Create nodes
+	int n1 = Graph.AddNode(nodeFactory.CreateNode(FVector2D{ 0, -150.f }));    
+	int n2 = Graph.AddNode(nodeFactory.CreateNode(FVector2D{0, 150.f }));     
+	int n3 = Graph.AddNode(nodeFactory.CreateNode(FVector2D{-300.f, -150.f })); 
+	int n4 = Graph.AddNode(nodeFactory.CreateNode(FVector2D{-300.f, 150.f }));  
+	int n5 = Graph.AddNode(nodeFactory.CreateNode(FVector2D{ 200.f, 0.f }));     
+
+	// House edges
+	Graph.AddConnection(n1, n2); 
+	Graph.AddConnection(n1, n3);
+	Graph.AddConnection(n2, n4); 
+	Graph.AddConnection(n3, n4);
+
+	// Roof
+	Graph.AddConnection(n1, n5);
+	Graph.AddConnection(n2, n5);
+
+	// Cross inside
+	Graph.AddConnection(n1, n4);
+	Graph.AddConnection(n2, n3);
+
 
 	// Spawn the Agent
 	Agent = GetWorld()->SpawnActor<ASteeringAgent>(SteeringAgentClass, 
@@ -105,23 +124,22 @@ void ALevel_GraphTheory::Tick(float DeltaTime)
 	Renderer.RenderGraph(Graph);
 	
 	// 1. Check if graph changed
-	//if (PlayerGraphEditor && PlayerGraphEditor->HasGraphChanged())
-	//{
-	//	EulerianPath euler(&Graph);
-	//	Eulerianity type = euler.IsEulerian();
-	//
-	//	if (type == Eulerianity::notEulerian)
-	//	{
-	//		UE_LOG(LogTemp, Warning, TEXT("Graph is not Eulerian"));
-	//		return;
-	//	}
-	//
-	//	// 2. Compute Eulerian path
-	//	std::vector<Node*> trail = euler.FindPath(type);
-	//
-	//	// 3. Convert to FVector2D and send to agent
-	//	UpdateAgentPath(trail);
-	//}
+	if (PlayerGraphEditor && PlayerGraphEditor->HasGraphUpdated())
+	{
+		EulerianPath euler(&Graph);
+		Eulerianity type = euler.IsEulerian();
+
+		if (type == Eulerianity::notEulerian)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Graph is not Eulerian"));
+			return;
+		}
+
+		std::vector<Node*> trail = euler.FindPath(type);
+
+		UpdateAgentPath(trail);
+	}
+
 
 	// TODO Check if the graph has updated
 	// TODO if so, run the EulerianPath algorithm

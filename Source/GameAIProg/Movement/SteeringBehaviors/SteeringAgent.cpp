@@ -23,6 +23,7 @@ void ASteeringAgent::BeginDestroy()
 
 void ASteeringAgent::Tick(float DeltaTime)
 {
+	if (!SteeringBehavior) return;
 	SteeringOutput output = SteeringBehavior->CalculateSteering(DeltaTime, *this);
 	if (output.IsValid)
 	{

@@ -46,12 +46,22 @@ class Arrive : public ISteeringBehavior
 {
 public:
 	Arrive() = default;
-	virtual ~Arrive() = default  ;
+	virtual ~Arrive() = default;
+
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
-	void SetTargetRadius(float radius) { maxRad = radius; };
-	float maxRad = 250;
-	float minRad = 200;
+
+	void SetTargetRadius(float radius)
+	{
+		minRad = radius * 0.2f;
+		maxRad = radius;
+	}
+
+
+	float minRad = 5.f;
+	float maxRad = 100.f;
 };
+
+
 class Pursuit : public ISteeringBehavior
 {
 public:

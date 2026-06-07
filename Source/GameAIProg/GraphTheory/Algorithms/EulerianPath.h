@@ -113,9 +113,10 @@ namespace GameAI
 			else
 			{
 				stack.pop();
-				path.push_back(graphCopy.GetNode(v).get());
+				path.push_back(m_pGraph->GetNode(v).get()); 
 			}
 		}
+
 
 		std::reverse(path.begin(), path.end());
 		return path;

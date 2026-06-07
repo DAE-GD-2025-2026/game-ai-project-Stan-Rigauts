@@ -14,10 +14,10 @@ PathFollow::~PathFollow()
 	delete pSeek;
 }
 
-void PathFollow::SetPath(std::vector<FVector2D>& path)
+void PathFollow::SetPath(std::vector<FVector2D>& path, bool loop )
 {
-	pathVec = path;  
-	
+	pathVec = path;
+	bLoop = loop;
 	currentPathIndex = -1;
 	GotoNextPathPoint();
 }
@@ -46,19 +46,24 @@ SteeringOutput PathFollow::CalculateSteering(float DeltaTime, ASteeringAgent& Ag
 void PathFollow::GotoNextPathPoint()
 {
 	++currentPathIndex;
-	if (currentPathIndex >= static_cast<int>(pathVec.size())) return;
-	
-	if (currentPathIndex == pathVec.size() -1)
+
+	if (currentPathIndex >= static_cast<int>(pathVec.size()))
 	{
-		FTargetData PathTarget{pathVec[currentPathIndex]};
-		//We have reached the last node
+		if (bLoop)
+			currentPathIndex = 0; // loop back
+		else
+			return; // stop
+	}
+
+	if (currentPathIndex == static_cast<int>(pathVec.size()) - 1)
+	{
+		FTargetData PathTarget{ pathVec[currentPathIndex] };
 		pArrive->SetTarget(PathTarget);
 		pCurrentSteering = pArrive;
 	}
 	else
 	{
-		FTargetData PathTarget{pathVec[currentPathIndex]};
-		//Move to the next node
+		FTargetData PathTarget{ pathVec[currentPathIndex] };
 		pSeek->SetTarget(PathTarget);
 		pCurrentSteering = pSeek;
 	}
